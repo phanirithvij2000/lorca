@@ -19,11 +19,11 @@ const (
 // are page bounds in pixels. PDF by default uses 96dpi density. For A4 page
 // you may use PageA4Width and PageA4Height constants.
 func PDF(url, script string, width, height int) ([]byte, error) {
-	return doHeadless(url, func(c *chrome) ([]byte, error) {
-		if _, err := c.eval(script); err != nil {
+	return doHeadless(url, func(c *Chrome) ([]byte, error) {
+		if _, err := c.Eval(script); err != nil {
 			return nil, err
 		}
-		return c.pdf(width, height)
+		return c.PDF(width, height)
 	})
 }
 
@@ -36,25 +36,25 @@ func PDF(url, script string, width, height int) ([]byte, error) {
 // This function is most convenient to convert SVG to PNG of different sizes,
 // for example when preparing Lorca app icons.
 func PNG(url, script string, x, y, width, height int, bg uint32, scale float32) ([]byte, error) {
-	return doHeadless(url, func(c *chrome) ([]byte, error) {
-		if _, err := c.eval(script); err != nil {
+	return doHeadless(url, func(c *Chrome) ([]byte, error) {
+		if _, err := c.Eval(script); err != nil {
 			return nil, err
 		}
-		return c.png(x, y, width, height, bg, scale)
+		return c.PNG(x, y, width, height, bg, scale)
 	})
 }
 
-func doHeadless(url string, f func(c *chrome) ([]byte, error)) ([]byte, error) {
+func doHeadless(url string, f func(c *Chrome) ([]byte, error)) ([]byte, error) {
 	dir, err := ioutil.TempDir("", "lorca")
 	if err != nil {
 		return nil, err
 	}
 	defer os.RemoveAll(dir)
 	args := append(defaultChromeArgs, fmt.Sprintf("--user-data-dir=%s", dir), "--remote-debugging-port=0", "--headless", url)
-	chrome, err := newChromeWithArgs(ChromeExecutable(), args...)
+	chrome, err := NewChromeWithArgs(ChromeExecutable(), args...)
 	if err != nil {
 		return nil, err
 	}
-	defer chrome.kill()
+	defer chrome.Kill()
 	return f(chrome)
 }

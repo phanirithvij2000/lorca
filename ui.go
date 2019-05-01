@@ -9,19 +9,8 @@ import (
 	"reflect"
 )
 
-// UI interface allows talking to the HTML5 UI from Go.
-type UI interface {
-	Load(url string) error
-	Bounds() (Bounds, error)
-	SetBounds(Bounds) error
-	Bind(name string, f interface{}) error
-	Eval(js string) Value
-	Done() <-chan struct{}
-	Close() error
-}
-
-type ui struct {
-	chrome *chrome
+type UI struct {
+	Chrome *Chrome
 	done   chan struct{}
 	tmpDir string
 }
@@ -58,7 +47,7 @@ var defaultChromeArgs = []string{
 // string - a temporary directory is created and it will be removed on
 // ui.Close(). You might want to use "--headless" custom CLI argument to test
 // your UI code.
-func New(url, dir string, width, height int, customArgs ...string) (UI, error) {
+func New(url, dir string, width, height int, customArgs ...string) (*UI, error) {
 	if url == "" {
 		url = "data:text/html,<html></html>"
 	}
@@ -76,7 +65,7 @@ func New(url, dir string, width, height int, customArgs ...string) (UI, error) {
 	args = append(args, customArgs...)
 	args = append(args, "--remote-debugging-port=0")
 
-	chrome, err := newChromeWithArgs(ChromeExecutable(), args...)
+	chrome, err := NewChromeWithArgs(ChromeExecutable(), args...)
 	done := make(chan struct{})
 	if err != nil {
 		return nil, err
@@ -86,16 +75,16 @@ func New(url, dir string, width, height int, customArgs ...string) (UI, error) {
 		chrome.cmd.Wait()
 		close(done)
 	}()
-	return &ui{chrome: chrome, done: done, tmpDir: tmpDir}, nil
+	return &UI{Chrome: chrome, done: done, tmpDir: tmpDir}, nil
 }
 
-func (u *ui) Done() <-chan struct{} {
+func (u *UI) Done() <-chan struct{} {
 	return u.done
 }
 
-func (u *ui) Close() error {
+func (u *UI) Close() error {
 	// ignore err, as the chrome process might be already dead, when user close the window.
-	u.chrome.kill()
+	u.Chrome.Kill()
 	<-u.done
 	if u.tmpDir != "" {
 		if err := os.RemoveAll(u.tmpDir); err != nil {
@@ -105,9 +94,9 @@ func (u *ui) Close() error {
 	return nil
 }
 
-func (u *ui) Load(url string) error { return u.chrome.load(url) }
+func (u *UI) Load(url string) error { return u.Chrome.Load(url) }
 
-func (u *ui) Bind(name string, f interface{}) error {
+func (u *UI) Bind(name string, f interface{}) error {
 	v := reflect.ValueOf(f)
 	// f must be a function
 	if v.Kind() != reflect.Func {
@@ -118,7 +107,7 @@ func (u *ui) Bind(name string, f interface{}) error {
 		return errors.New("function may only return a value or a value+error")
 	}
 
-	return u.chrome.bind(name, func(raw []json.RawMessage) (interface{}, error) {
+	return u.Chrome.Bind(name, func(raw []json.RawMessage) (interface{}, error) {
 		if len(raw) != v.Type().NumIn() {
 			return nil, errors.New("function arguments mismatch")
 		}
@@ -157,15 +146,15 @@ func (u *ui) Bind(name string, f interface{}) error {
 	})
 }
 
-func (u *ui) Eval(js string) Value {
-	v, err := u.chrome.eval(js)
+func (u *UI) Eval(js string) Value {
+	v, err := u.Chrome.Eval(js)
 	return value{err: err, raw: v}
 }
 
-func (u *ui) SetBounds(b Bounds) error {
-	return u.chrome.setBounds(b)
+func (u *UI) SetBounds(b Bounds) error {
+	return u.Chrome.SetBounds(b)
 }
 
-func (u *ui) Bounds() (Bounds, error) {
-	return u.chrome.bounds()
+func (u *UI) Bounds() (Bounds, error) {
+	return u.Chrome.Bounds()
 }

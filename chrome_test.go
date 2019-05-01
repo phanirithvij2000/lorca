@@ -10,11 +10,11 @@ import (
 )
 
 func TestChromeEval(t *testing.T) {
-	c, err := newChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
+	c, err := NewChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer c.kill()
+	defer c.Kill()
 
 	for _, test := range []struct {
 		Expr   string
@@ -32,7 +32,7 @@ func TestChromeEval(t *testing.T) {
 		{Expr: `throw "bar"`, Error: `"bar"`},
 		{Expr: `2+`, Error: `SyntaxError: Unexpected end of input`},
 	} {
-		result, err := c.eval(test.Expr)
+		result, err := c.Eval(test.Expr)
 		if err != nil {
 			if err.Error() != test.Error {
 				t.Fatal(test.Expr, err, test.Error)
@@ -44,16 +44,16 @@ func TestChromeEval(t *testing.T) {
 }
 
 func TestChromeLoad(t *testing.T) {
-	c, err := newChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
+	c, err := NewChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer c.kill()
-	if err := c.load("data:text/html,<html><body>Hello</body></html>"); err != nil {
+	defer c.Kill()
+	if err := c.Load("data:text/html,<html><body>Hello</body></html>"); err != nil {
 		t.Fatal(err)
 	}
 	for i := 0; i < 10; i++ {
-		url, err := c.eval(`window.location.href`)
+		url, err := c.Eval(`window.location.href`)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -61,7 +61,7 @@ func TestChromeLoad(t *testing.T) {
 			break
 		}
 	}
-	if res, err := c.eval(`document.body ? document.body.innerText :
+	if res, err := c.Eval(`document.body ? document.body.innerText :
 			new Promise(res => window.onload = () => res(document.body.innerText))`); err != nil {
 		t.Fatal(err)
 	} else if string(res) != `"Hello"` {
@@ -70,13 +70,13 @@ func TestChromeLoad(t *testing.T) {
 }
 
 func TestChromeBind(t *testing.T) {
-	c, err := newChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
+	c, err := NewChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer c.kill()
+	defer c.Kill()
 
-	if err := c.bind("add", func(args []json.RawMessage) (interface{}, error) {
+	if err := c.Bind("add", func(args []json.RawMessage) (interface{}, error) {
 		a, b := 0, 0
 		if len(args) != 2 {
 			return nil, errors.New("2 arguments expected")
@@ -92,28 +92,28 @@ func TestChromeBind(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if res, err := c.eval(`window.add(2, 3)`); err != nil {
+	if res, err := c.Eval(`window.add(2, 3)`); err != nil {
 		t.Fatal(err)
 	} else if string(res) != `5` {
 		t.Fatal(string(res))
 	}
 
-	if res, err := c.eval(`window.add("foo", "bar")`); err == nil {
+	if res, err := c.Eval(`window.add("foo", "bar")`); err == nil {
 		t.Fatal(string(res), err)
 	}
-	if res, err := c.eval(`window.add(1, 2, 3)`); err == nil {
+	if res, err := c.Eval(`window.add(1, 2, 3)`); err == nil {
 		t.Fatal(res, err)
 	}
 }
 
 func TestChromeAsync(t *testing.T) {
-	c, err := newChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
+	c, err := NewChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer c.kill()
+	defer c.Kill()
 
-	if err := c.bind("len", func(args []json.RawMessage) (interface{}, error) {
+	if err := c.Bind("len", func(args []json.RawMessage) (interface{}, error) {
 		return len(args[0]), nil
 	}); err != nil {
 		t.Fatal(err)
@@ -126,7 +126,7 @@ func TestChromeAsync(t *testing.T) {
 	for i := 0; i < n; i++ {
 		go func(i int) {
 			defer wg.Done()
-			v, err := c.eval("len('hello')")
+			v, err := c.Eval("len('hello')")
 			if string(v) != `7` {
 				atomic.StoreInt32(&failed, 1)
 			} else if err != nil {

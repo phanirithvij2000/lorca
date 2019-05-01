@@ -35,7 +35,8 @@ type msg struct {
 	Params json.RawMessage `json:"params"`
 }
 
-type chrome struct {
+// Chrome represents a chrome process
+type Chrome struct {
 	sync.Mutex
 	cmd      *exec.Cmd
 	ws       *websocket.Conn
@@ -47,9 +48,9 @@ type chrome struct {
 	bindings map[string]bindingFunc
 }
 
-func newChromeWithArgs(chromeBinary string, args ...string) (*chrome, error) {
+func NewChromeWithArgs(chromeBinary string, args ...string) (*Chrome, error) {
 	// The first two IDs are used internally during the initialization
-	c := &chrome{
+	c := &Chrome{
 		id:       2,
 		pending:  map[int]chan result{},
 		bindings: map[string]bindingFunc{},
@@ -69,7 +70,7 @@ func newChromeWithArgs(chromeBinary string, args ...string) (*chrome, error) {
 	re := regexp.MustCompile(`^DevTools listening on (ws://.*?)\r?\n$`)
 	m, err := readUntilMatch(pipe, re)
 	if err != nil {
-		c.kill()
+		c.Kill()
 		return nil, err
 	}
 	wsURL := m[1]
@@ -77,20 +78,20 @@ func newChromeWithArgs(chromeBinary string, args ...string) (*chrome, error) {
 	// Open a websocket
 	c.ws, err = websocket.Dial(wsURL, "", "http://127.0.0.1")
 	if err != nil {
-		c.kill()
+		c.Kill()
 		return nil, err
 	}
 
 	// Find target and initialize session
 	c.target, err = c.findTarget()
 	if err != nil {
-		c.kill()
+		c.Kill()
 		return nil, err
 	}
 
 	c.session, err = c.startSession(c.target)
 	if err != nil {
-		c.kill()
+		c.Kill()
 		return nil, err
 	}
 	go c.readLoop()
@@ -103,8 +104,8 @@ func newChromeWithArgs(chromeBinary string, args ...string) (*chrome, error) {
 		"Performance.enable":   nil,
 		"Log.enable":           nil,
 	} {
-		if _, err := c.send(method, args); err != nil {
-			c.kill()
+		if _, err := c.Send(method, args); err != nil {
+			c.Kill()
 			c.cmd.Wait()
 			return nil, err
 		}
@@ -113,7 +114,7 @@ func newChromeWithArgs(chromeBinary string, args ...string) (*chrome, error) {
 	if !contains(args, "--headless") {
 		win, err := c.getWindowForTarget(c.target)
 		if err != nil {
-			c.kill()
+			c.Kill()
 			return nil, err
 		}
 		c.window = win.WindowID
@@ -122,7 +123,7 @@ func newChromeWithArgs(chromeBinary string, args ...string) (*chrome, error) {
 	return c, nil
 }
 
-func (c *chrome) findTarget() (string, error) {
+func (c *Chrome) findTarget() (string, error) {
 	err := websocket.JSON.Send(c.ws, h{
 		"id": 0, "method": "Target.setDiscoverTargets", "params": h{"discover": true},
 	})
@@ -149,7 +150,7 @@ func (c *chrome) findTarget() (string, error) {
 	}
 }
 
-func (c *chrome) startSession(target string) (string, error) {
+func (c *Chrome) startSession(target string) (string, error) {
 	err := websocket.JSON.Send(c.ws, h{
 		"id": 1, "method": "Target.attachToTarget", "params": h{"targetId": target},
 	})
@@ -204,9 +205,9 @@ type windowTargetMessage struct {
 	Bounds   Bounds `json:"bounds"`
 }
 
-func (c *chrome) getWindowForTarget(target string) (windowTargetMessage, error) {
+func (c *Chrome) getWindowForTarget(target string) (windowTargetMessage, error) {
 	var m windowTargetMessage
-	msg, err := c.send("Browser.getWindowForTarget", h{"targetId": target})
+	msg, err := c.Send("Browser.getWindowForTarget", h{"targetId": target})
 	if err != nil {
 		return m, err
 	}
@@ -250,7 +251,7 @@ type targetMessage struct {
 	} `json:"result"`
 }
 
-func (c *chrome) readLoop() {
+func (c *Chrome) readLoop() {
 	for {
 		m := msg{}
 		if err := websocket.JSON.Receive(c.ws, &m); err != nil {
@@ -302,7 +303,7 @@ func (c *chrome) readLoop() {
 							window['%[1]s']['callbacks'].delete(%[2]d);
 							window['%[1]s']['errors'].delete(%[2]d);
 							`, payload.Name, payload.Seq, result, error)
-						c.send("Runtime.evaluate", h{"expression": expr, "contextId": res.Params.ID})
+						c.Send("Runtime.evaluate", h{"expression": expr, "contextId": res.Params.ID})
 					}()
 				}
 				continue
@@ -336,14 +337,14 @@ func (c *chrome) readLoop() {
 			}{}
 			json.Unmarshal(m.Params, &params)
 			if params.TargetID == c.target {
-				c.kill()
+				c.Kill()
 				return
 			}
 		}
 	}
 }
 
-func (c *chrome) send(method string, params h) (json.RawMessage, error) {
+func (c *Chrome) Send(method string, params h) (json.RawMessage, error) {
 	id := atomic.AddInt32(&c.id, 1)
 	b, err := json.Marshal(h{"id": int(id), "method": method, "params": params})
 	if err != nil {
@@ -365,20 +366,20 @@ func (c *chrome) send(method string, params h) (json.RawMessage, error) {
 	return res.Value, res.Err
 }
 
-func (c *chrome) load(url string) error {
-	_, err := c.send("Page.navigate", h{"url": url})
+func (c *Chrome) Load(url string) error {
+	_, err := c.Send("Page.navigate", h{"url": url})
 	return err
 }
 
-func (c *chrome) eval(expr string) (json.RawMessage, error) {
-	return c.send("Runtime.evaluate", h{"expression": expr, "awaitPromise": true, "returnByValue": true})
+func (c *Chrome) Eval(expr string) (json.RawMessage, error) {
+	return c.Send("Runtime.evaluate", h{"expression": expr, "awaitPromise": true, "returnByValue": true})
 }
 
-func (c *chrome) bind(name string, f bindingFunc) error {
+func (c *Chrome) Bind(name string, f bindingFunc) error {
 	c.Lock()
 	c.bindings[name] = f
 	c.Unlock()
-	if _, err := c.send("Runtime.addBinding", h{"name": name}); err != nil {
+	if _, err := c.Send("Runtime.addBinding", h{"name": name}); err != nil {
 		return err
 	}
 	script := fmt.Sprintf(`(() => {
@@ -406,15 +407,15 @@ func (c *chrome) bind(name string, f bindingFunc) error {
 		return promise;
 	}})();
 	`, name)
-	_, err := c.send("Page.addScriptToEvaluateOnNewDocument", h{"source": script})
+	_, err := c.Send("Page.addScriptToEvaluateOnNewDocument", h{"source": script})
 	if err != nil {
 		return err
 	}
-	_, err = c.eval(script)
+	_, err = c.Eval(script)
 	return err
 }
 
-func (c *chrome) setBounds(b Bounds) error {
+func (c *Chrome) SetBounds(b Bounds) error {
 	if b.WindowState == "" {
 		b.WindowState = WindowStateNormal
 	}
@@ -422,12 +423,12 @@ func (c *chrome) setBounds(b Bounds) error {
 	if b.WindowState != WindowStateNormal {
 		param["bounds"] = h{"windowState": b.WindowState}
 	}
-	_, err := c.send("Browser.setWindowBounds", param)
+	_, err := c.Send("Browser.setWindowBounds", param)
 	return err
 }
 
-func (c *chrome) bounds() (Bounds, error) {
-	result, err := c.send("Browser.getWindowBounds", h{"windowId": c.window})
+func (c *Chrome) Bounds() (Bounds, error) {
+	result, err := c.Send("Browser.getWindowBounds", h{"windowId": c.window})
 	if err != nil {
 		return Bounds{}, err
 	}
@@ -438,8 +439,8 @@ func (c *chrome) bounds() (Bounds, error) {
 	return bounds.Bounds, err
 }
 
-func (c *chrome) pdf(width, height int) ([]byte, error) {
-	result, err := c.send("Page.printToPDF", h{
+func (c *Chrome) PDF(width, height int) ([]byte, error) {
+	result, err := c.Send("Page.printToPDF", h{
 		"paperWidth":  float32(width) / 96,
 		"paperHeight": float32(height) / 96,
 	})
@@ -453,10 +454,10 @@ func (c *chrome) pdf(width, height int) ([]byte, error) {
 	return pdf.Data, err
 }
 
-func (c *chrome) png(x, y, width, height int, bg uint32, scale float32) ([]byte, error) {
+func (c *Chrome) PNG(x, y, width, height int, bg uint32, scale float32) ([]byte, error) {
 	if x == 0 && y == 0 && width == 0 && height == 0 {
 		// By default either use SVG size if it's an SVG, or use A4 page size
-		bounds, err := c.eval(`document.rootElement ? [document.rootElement.x.baseVal.value, document.rootElement.y.baseVal.value, document.rootElement.width.baseVal.value, document.rootElement.height.baseVal.value] : [0,0,816,1056]`)
+		bounds, err := c.Eval(`document.rootElement ? [document.rootElement.x.baseVal.value, document.rootElement.y.baseVal.value, document.rootElement.width.baseVal.value, document.rootElement.height.baseVal.value] : [0,0,816,1056]`)
 		if err != nil {
 			return nil, err
 		}
@@ -467,7 +468,7 @@ func (c *chrome) png(x, y, width, height int, bg uint32, scale float32) ([]byte,
 		x, y, width, height = rect[0], rect[1], rect[2], rect[3]
 	}
 
-	_, err := c.send("Emulation.setDefaultBackgroundColorOverride", h{
+	_, err := c.Send("Emulation.setDefaultBackgroundColorOverride", h{
 		"color": h{
 			"r": (bg >> 16) & 0xff,
 			"g": (bg >> 8) & 0xff,
@@ -478,7 +479,7 @@ func (c *chrome) png(x, y, width, height int, bg uint32, scale float32) ([]byte,
 	if err != nil {
 		return nil, err
 	}
-	result, err := c.send("Page.captureScreenshot", h{
+	result, err := c.Send("Page.captureScreenshot", h{
 		"clip": h{
 			"x": x, "y": y, "width": width, "height": height, "scale": scale,
 		},
@@ -493,7 +494,7 @@ func (c *chrome) png(x, y, width, height int, bg uint32, scale float32) ([]byte,
 	return pdf.Data, err
 }
 
-func (c *chrome) kill() error {
+func (c *Chrome) Kill() error {
 	if c.ws != nil {
 		if err := c.ws.Close(); err != nil {
 			return err
