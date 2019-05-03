@@ -9,7 +9,7 @@ const ctrlOrCmdCodes = new Set(
 	 'KeyT', 'KeyW', 'KeyY', 'Tab', 'PageUp', 'PageDown', 'F4']);
 const cmdCodes = new Set(['BracketLeft', 'BracketRight', 'Comma']);
 const cmdOptionCodes = new Set(['ArrowLeft', 'ArrowRight', 'KeyB']);
-const ctrlShiftCodes = new Set(['KeyQ', 'KeyW']);
+const ctrlShiftCodes = new Set(['KeyQ', 'KeyW', 'KeyI']);
 const altCodes = new Set(['Home', 'ArrowLeft', 'ArrowRight', 'F4']);
 
 function preventDefaultShortcuts(event) {
