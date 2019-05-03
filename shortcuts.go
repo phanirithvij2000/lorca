@@ -2,8 +2,14 @@ package lorca
 
 // based on https://github.com/GoogleChromeLabs/carlo/blob/master/lib/features/shortcuts.js
 
-// DisableShortcutsScripts disables default shortcuts
-const DisableShortcutsScripts = `
+// DisableContextMenuScript is a browser-side script that
+// disables Chrome's right-click context menu
+const DisableContextMenuScript = `
+	document.addEventListener('contextmenu', event => event.preventDefault());
+`
+
+// DisableShortcutsScript disables default shortcuts
+const DisableShortcutsScript = `
 const ctrlOrCmdCodes = new Set(
 	['KeyD', 'KeyE', 'KeyD', 'KeyG', 'KeyN', 'KeyO', 'KeyP', 'KeyQ', 'KeyR', 'KeyS', 'KeyU',
 	 'KeyT', 'KeyW', 'KeyY', 'Tab', 'PageUp', 'PageDown', 'F4']);

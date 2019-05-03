@@ -528,10 +528,16 @@ func (c *Chrome) Kill() error {
 	return nil
 }
 
+// DisableContextMenu disables Chrome's default context menu on right mouse click
+func (c *Chrome) DisableContextMenu() error {
+	return c.AddScriptToEvaluateOnNewDocument(DisableContextMenuScript)
+}
+
 // DisableDefaultShortcuts disables default shortucts like Ctr-N to open a new tab
 func (c *Chrome) DisableDefaultShortcuts() error {
-	return c.AddScriptToEvaluateOnNewDocument(DisableShortcutsScripts)
+	return c.AddScriptToEvaluateOnNewDocument(DisableShortcutsScript)
 }
+
 func readUntilMatch(r io.ReadCloser, re *regexp.Regexp) ([]string, error) {
 	br := bufio.NewReader(r)
 	for {
