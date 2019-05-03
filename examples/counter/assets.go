@@ -47,7 +47,7 @@ func (fs *fs) Readdir(count int) ([]os.FileInfo, error) {
 type file struct {
 	name string
 	size int
-	*bytes.Reader 
+	*bytes.Reader
 }
 
 func (f *file) Close() error { return nil }

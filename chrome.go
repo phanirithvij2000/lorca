@@ -48,6 +48,7 @@ type Chrome struct {
 	bindings map[string]bindingFunc
 }
 
+// NewChromeWithArgs starts chrome process with arguments
 func NewChromeWithArgs(chromeBinary string, args ...string) (*Chrome, error) {
 	// The first two IDs are used internally during the initialization
 	c := &Chrome{
@@ -56,7 +57,6 @@ func NewChromeWithArgs(chromeBinary string, args ...string) (*Chrome, error) {
 		bindings: map[string]bindingFunc{},
 	}
 
-	// Start chrome process
 	c.cmd = exec.Command(chromeBinary, args...)
 	pipe, err := c.cmd.StderrPipe()
 	if err != nil {
@@ -344,6 +344,8 @@ func (c *Chrome) readLoop() {
 	}
 }
 
+// Send sends a method with a parameters to the browser, waits for response
+// and returns response as json
 func (c *Chrome) Send(method string, params h) (json.RawMessage, error) {
 	id := atomic.AddInt32(&c.id, 1)
 	b, err := json.Marshal(h{"id": int(id), "method": method, "params": params})
@@ -366,15 +368,29 @@ func (c *Chrome) Send(method string, params h) (json.RawMessage, error) {
 	return res.Value, res.Err
 }
 
+// Load navigates to a given URL
 func (c *Chrome) Load(url string) error {
 	_, err := c.Send("Page.navigate", h{"url": url})
 	return err
 }
 
+// Eval evaluates JavaScript expression in the browser and returns response
 func (c *Chrome) Eval(expr string) (json.RawMessage, error) {
 	return c.Send("Runtime.evaluate", h{"expression": expr, "awaitPromise": true, "returnByValue": true})
 }
 
+// AddScriptToEvaluateOnNewDocument adds JavaScript code to be evaluated
+// when new document is evaluted
+func (c *Chrome) AddScriptToEvaluateOnNewDocument(script string) error {
+	_, err := c.Send("Page.addScriptToEvaluateOnNewDocument", h{"source": script})
+	if err != nil {
+		return err
+	}
+	_, err = c.Eval(script)
+	return err
+}
+
+// Bind creates a browser-side binding with name to a function
 func (c *Chrome) Bind(name string, f bindingFunc) error {
 	c.Lock()
 	c.bindings[name] = f
@@ -415,6 +431,7 @@ func (c *Chrome) Bind(name string, f bindingFunc) error {
 	return err
 }
 
+// SetBounds sets the size, position and state of a browser window
 func (c *Chrome) SetBounds(b Bounds) error {
 	if b.WindowState == "" {
 		b.WindowState = WindowStateNormal
@@ -427,6 +444,7 @@ func (c *Chrome) SetBounds(b Bounds) error {
 	return err
 }
 
+// Bounds returns the size, position and a state of a browser window
 func (c *Chrome) Bounds() (Bounds, error) {
 	result, err := c.Send("Browser.getWindowBounds", h{"windowId": c.window})
 	if err != nil {
@@ -439,6 +457,7 @@ func (c *Chrome) Bounds() (Bounds, error) {
 	return bounds.Bounds, err
 }
 
+// PDF generates a PDF of a given size and returns the PDF content as []byte
 func (c *Chrome) PDF(width, height int) ([]byte, error) {
 	result, err := c.Send("Page.printToPDF", h{
 		"paperWidth":  float32(width) / 96,
@@ -454,6 +473,7 @@ func (c *Chrome) PDF(width, height int) ([]byte, error) {
 	return pdf.Data, err
 }
 
+// PNG generates
 func (c *Chrome) PNG(x, y, width, height int, bg uint32, scale float32) ([]byte, error) {
 	if x == 0 && y == 0 && width == 0 && height == 0 {
 		// By default either use SVG size if it's an SVG, or use A4 page size
@@ -494,6 +514,7 @@ func (c *Chrome) PNG(x, y, width, height int, bg uint32, scale float32) ([]byte,
 	return pdf.Data, err
 }
 
+// Kill kills the chrome process
 func (c *Chrome) Kill() error {
 	if c.ws != nil {
 		if err := c.ws.Close(); err != nil {
@@ -507,6 +528,10 @@ func (c *Chrome) Kill() error {
 	return nil
 }
 
+// DisableDefaultShortcuts disables default shortucts like Ctr-N to open a new tab
+func (c *Chrome) DisableDefaultShortcuts() error {
+	return c.AddScriptToEvaluateOnNewDocument(DisableShortcutsScripts)
+}
 func readUntilMatch(r io.ReadCloser, re *regexp.Regexp) ([]string, error) {
 	br := bufio.NewReader(r)
 	for {

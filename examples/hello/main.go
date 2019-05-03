@@ -18,6 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	ui.Chrome.DisableDefaultShortcuts()
 	defer ui.Close()
 	// Wait until UI window is closed
 	<-ui.Done()
