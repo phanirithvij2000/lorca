@@ -5,7 +5,7 @@ package lorca
 // DisableShortcutsScripts disables default shortcuts
 const DisableShortcutsScripts = `
 const ctrlOrCmdCodes = new Set(
-	['KeyD', 'KeyE', 'KeyD', 'KeyG', 'KeyN', 'KeyO', 'KeyP', 'KeyQ', 'KeyR', 'KeyS',
+	['KeyD', 'KeyE', 'KeyD', 'KeyG', 'KeyN', 'KeyO', 'KeyP', 'KeyQ', 'KeyR', 'KeyS', 'KeyU',
 	 'KeyT', 'KeyW', 'KeyY', 'Tab', 'PageUp', 'PageDown', 'F4']);
 const cmdCodes = new Set(['BracketLeft', 'BracketRight', 'Comma']);
 const cmdOptionCodes = new Set(['ArrowLeft', 'ArrowRight', 'KeyB']);
