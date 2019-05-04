@@ -38,7 +38,7 @@ type msg struct {
 // Chrome represents a chrome process
 type Chrome struct {
 	sync.Mutex
-	cmd      *exec.Cmd
+	Cmd      *exec.Cmd
 	ws       *websocket.Conn
 	id       int32
 	target   string
