@@ -57,12 +57,12 @@ func NewChromeWithArgs(chromeBinary string, args ...string) (*Chrome, error) {
 		bindings: map[string]bindingFunc{},
 	}
 
-	c.cmd = exec.Command(chromeBinary, args...)
-	pipe, err := c.cmd.StderrPipe()
+	c.Cmd = exec.Command(chromeBinary, args...)
+	pipe, err := c.Cmd.StderrPipe()
 	if err != nil {
 		return nil, err
 	}
-	if err := c.cmd.Start(); err != nil {
+	if err := c.Cmd.Start(); err != nil {
 		return nil, err
 	}
 
@@ -106,7 +106,7 @@ func NewChromeWithArgs(chromeBinary string, args ...string) (*Chrome, error) {
 	} {
 		if _, err := c.Send(method, args); err != nil {
 			c.Kill()
-			c.cmd.Wait()
+			c.Cmd.Wait()
 			return nil, err
 		}
 	}
@@ -522,8 +522,8 @@ func (c *Chrome) Kill() error {
 		}
 	}
 	// TODO: cancel all pending requests
-	if state := c.cmd.ProcessState; state == nil || !state.Exited() {
-		return c.cmd.Process.Kill()
+	if state := c.Cmd.ProcessState; state == nil || !state.Exited() {
+		return c.Cmd.Process.Kill()
 	}
 	return nil
 }

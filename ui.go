@@ -72,7 +72,7 @@ func New(url, dir string, width, height int, customArgs ...string) (*UI, error) 
 	}
 
 	go func() {
-		chrome.cmd.Wait()
+		chrome.Cmd.Wait()
 		close(done)
 	}()
 	return &UI{Chrome: chrome, done: done, tmpDir: tmpDir}, nil
