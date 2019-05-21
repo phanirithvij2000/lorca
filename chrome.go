@@ -392,8 +392,14 @@ func (c *Chrome) AddScriptToEvaluateOnNewDocument(script string) error {
 
 // Reload reloads current page
 // https://pptr.dev/#?product=Puppeteer&show=api-pagereloadoptions
-func (c *Chrome) Reload() error {
+func (c *Chrome) Reload(disableCache bool) error {
+	if disableCache {
+		c.Send("Network.setCacheDisabled", h{"cacheDisabled": true})
+	}
 	_, err := c.Send("Page.reload", h{"waitUntil": 0})
+	if disableCache {
+		c.Send("Network.setCacheDisabled", h{"cacheDisabled": false})
+	}
 	return err
 }
 
