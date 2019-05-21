@@ -390,6 +390,13 @@ func (c *Chrome) AddScriptToEvaluateOnNewDocument(script string) error {
 	return err
 }
 
+// Reload reloads current page
+// https://pptr.dev/#?product=Puppeteer&show=api-pagereloadoptions
+func (c *Chrome) Reload() error {
+	_, err := c.Send("Page.reload", h{"waitUntil": 0})
+	return err
+}
+
 // Bind creates a browser-side binding with name to a function
 func (c *Chrome) Bind(name string, f bindingFunc) error {
 	c.Lock()

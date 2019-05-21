@@ -10,7 +10,7 @@ import (
 )
 
 type UI struct {
-	Chrome *Chrome
+	*Chrome
 	done   chan struct{}
 	tmpDir string
 }
@@ -94,8 +94,6 @@ func (u *UI) Close() error {
 	return nil
 }
 
-func (u *UI) Load(url string) error { return u.Chrome.Load(url) }
-
 func (u *UI) Bind(name string, f interface{}) error {
 	v := reflect.ValueOf(f)
 	// f must be a function
@@ -149,12 +147,4 @@ func (u *UI) Bind(name string, f interface{}) error {
 func (u *UI) Eval(js string) Value {
 	v, err := u.Chrome.Eval(js)
 	return value{err: err, raw: v}
-}
-
-func (u *UI) SetBounds(b Bounds) error {
-	return u.Chrome.SetBounds(b)
-}
-
-func (u *UI) Bounds() (Bounds, error) {
-	return u.Chrome.Bounds()
 }
