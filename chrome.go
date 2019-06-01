@@ -404,18 +404,52 @@ func (c *Chrome) Reload(disableCache bool) error {
 	return err
 }
 
-// Back navigates to previous page in browser history
-// https://pptr.dev/#?product=Puppeteer&show=api-pagegobackoptions
-func (c *Chrome) Back() error {
-	_, err := c.Send("Page.goBack", h{"waitUntil": 0})
+type navigationHistoryEntry struct {
+	ID int `json:"id"`
+}
+
+type navigationHistory struct {
+	CurrentIndex int `json:"currentIndex"`
+	Entries []*navigationHistoryEntry `json:"entries"`
+}
+
+func (c *Chrome) getNavigationHistory() (*navigationHistory, error) {
+	result, err := c.Send("Page.getNavigationHistory", nil)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("Navigation history:\n%s\n", string(result))
+	var h navigationHistory
+	err = json.Unmarshal(result, &h)
+	if err != nil {
+		return nil, err
+	}
+	return &h, nil
+}
+
+func (c *Chrome) goDelta(delta int) error {
+	history, err := c.getNavigationHistory()
+	if err != nil {
+		return err
+	}
+	n := history.CurrentIndex + delta
+	if n < 0 || n >= len(history.Entries) {
+		return fmt.Errorf("invalid delta %d, would navigate to %d which is outside of history length of %d", delta, n, len(history.Entries))
+	}
+	e := history.Entries[n]
+	// TODO: maybe add a way to wait for navigation
+	_, err = c.Send("Page.navigateToHistoryEntry", h{"entryId": e.ID})
 	return err
 }
 
+// Back navigates to previous page in browser history
+func (c *Chrome) Back() error {
+	return c.goDelta(1)
+}
+
 // Forward navigates to next page in browser history
-// https://pptr.dev/#?product=Puppeteer&show=api-pagegoforwardoptions
 func (c *Chrome) Forward() error {
-	_, err := c.Send("Page.goForward", h{"waitUntil": 0})
-	return err
+	return c.goDelta(1)
 }
 
 // Bind creates a browser-side binding with name to a function
