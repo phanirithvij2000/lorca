@@ -393,6 +393,7 @@ func (c *Chrome) AddScriptToEvaluateOnNewDocument(script string) error {
 // Reload reloads current page
 // https://pptr.dev/#?product=Puppeteer&show=api-pagereloadoptions
 func (c *Chrome) Reload(disableCache bool) error {
+	// TODO: should restore current cache setting
 	if disableCache {
 		c.Send("Network.setCacheDisabled", h{"cacheDisabled": true})
 	}
@@ -400,6 +401,20 @@ func (c *Chrome) Reload(disableCache bool) error {
 	if disableCache {
 		c.Send("Network.setCacheDisabled", h{"cacheDisabled": false})
 	}
+	return err
+}
+
+// Back navigates to previous page in browser history
+// https://pptr.dev/#?product=Puppeteer&show=api-pagegobackoptions
+func (c *Chrome) Back() error {
+	_, err := c.Send("Page.goBack", h{"waitUntil": 0})
+	return err
+}
+
+// Forward navigates to next page in browser history
+// https://pptr.dev/#?product=Puppeteer&show=api-pagegoforwardoptions
+func (c *Chrome) Forward() error {
+	_, err := c.Send("Page.goForward", h{"waitUntil": 0})
 	return err
 }
 
