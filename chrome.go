@@ -404,22 +404,28 @@ func (c *Chrome) Reload(disableCache bool) error {
 	return err
 }
 
-type navigationHistoryEntry struct {
-	ID int `json:"id"`
+// NavigationHistoryEntry represents a single entry in navigation history
+type NavigationHistoryEntry struct {
+	ID             int64  `json:"id"`
+	URL            string `json:"url"`
+	UserTypedURL   string `json:"userTypedURL"`
+	Title          string `json:"title"`
+	TransitionType string `json:"transitionType"`
 }
 
-type navigationHistory struct {
+// NavigationHistory represents browser navigation history
+type NavigationHistory struct {
 	CurrentIndex int `json:"currentIndex"`
-	Entries []*navigationHistoryEntry `json:"entries"`
+	Entries []*NavigationHistoryEntry `json:"entries"`
 }
 
-func (c *Chrome) getNavigationHistory() (*navigationHistory, error) {
+// GetNavigationHistory returns browser navigation history
+func (c *Chrome) GetNavigationHistory() (*NavigationHistory, error) {
 	result, err := c.Send("Page.getNavigationHistory", nil)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Navigation history:\n%s\n", string(result))
-	var h navigationHistory
+	var h NavigationHistory
 	err = json.Unmarshal(result, &h)
 	if err != nil {
 		return nil, err
@@ -428,7 +434,7 @@ func (c *Chrome) getNavigationHistory() (*navigationHistory, error) {
 }
 
 func (c *Chrome) goDelta(delta int) error {
-	history, err := c.getNavigationHistory()
+	history, err := c.GetNavigationHistory()
 	if err != nil {
 		return err
 	}
@@ -444,7 +450,7 @@ func (c *Chrome) goDelta(delta int) error {
 
 // Back navigates to previous page in browser history
 func (c *Chrome) Back() error {
-	return c.goDelta(1)
+	return c.goDelta(-1)
 }
 
 // Forward navigates to next page in browser history
