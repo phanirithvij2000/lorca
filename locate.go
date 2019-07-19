@@ -7,10 +7,6 @@ import (
 	"strings"
 )
 
-// ChromeExecutable returns a string which points to the preferred Chrome
-// executable file.
-var ChromeExecutable = LocateChrome
-
 // LocateChrome returns a path to the Chrome binary, or an empty string if
 // Chrome installation is not found.
 func LocateChrome() string {
@@ -28,6 +24,7 @@ func LocateChrome() string {
 		}
 	case "windows":
 		paths = []string{
+			// TODO: should use os.Getenv("SystemDrive") (is C: on my system) instead of C: and env "ProgramFiles" and "ProgramFiles(x86)"
 			"C:/Users/" + os.Getenv("USERNAME") + "/AppData/Local/Google/Chrome/Application/chrome.exe",
 			"C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
 			"C:/Program Files/Google/Chrome/Application/chrome.exe",
@@ -43,7 +40,7 @@ func LocateChrome() string {
 	}
 
 	for _, path := range paths {
-		if _, err := os.Stat(path); os.IsNotExist(err) {
+		if _, err := os.Stat(path); err != nil {
 			continue
 		}
 		return path

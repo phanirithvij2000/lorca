@@ -9,8 +9,13 @@ import (
 	"testing"
 )
 
+// TODO: made headless controllable via env "NO_HEADLESS"
+
 func TestChromeEval(t *testing.T) {
-	c, err := NewChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
+	// TODO: on windows it hangs in --headless mode
+	//args := ["--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"]
+	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0"}
+	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +49,10 @@ func TestChromeEval(t *testing.T) {
 }
 
 func TestChromeLoad(t *testing.T) {
-	c, err := NewChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
+	// TODO: on windows it hangs in --headless mode
+	//args := []string{"--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"}
+	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0"}
+	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +78,10 @@ func TestChromeLoad(t *testing.T) {
 }
 
 func TestChromeBind(t *testing.T) {
-	c, err := NewChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
+	// TODO: on windows it hangs in --headless mode
+	//args := []string{"--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"}
+	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0"}
+	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,7 +118,10 @@ func TestChromeBind(t *testing.T) {
 }
 
 func TestChromeAsync(t *testing.T) {
-	c, err := NewChromeWithArgs(ChromeExecutable(), "--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0")
+	// TODO: on windows it hangs in --headless mode
+	//args := []string{"--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"}
+	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0"}
+	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)
 	}
