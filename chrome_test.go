@@ -14,7 +14,7 @@ import (
 func TestChromeEval(t *testing.T) {
 	// TODO: on windows it hangs in --headless mode
 	//args := ["--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"]
-	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0"}
+	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0", "--headless"}
 	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)
