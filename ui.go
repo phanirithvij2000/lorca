@@ -47,20 +47,20 @@ var defaultChromeArgs = []string{
 // string - a temporary directory is created and it will be removed on
 // ui.Close(). You might want to use "--headless" custom CLI argument to test
 // your UI code.
-func New(chromeExe, url, dir string, width, height int, customArgs ...string) (*UI, error) {
+func New(chromeExe, url, userDataDir string, width, height int, customArgs ...string) (*UI, error) {
 	if url == "" {
 		url = "data:text/html,<html></html>"
 	}
 	tmpDir := ""
-	if dir == "" {
+	if userDataDir == "" {
 		name, err := ioutil.TempDir("", "lorca")
 		if err != nil {
 			return nil, err
 		}
-		dir, tmpDir = name, name
+		userDataDir, tmpDir = name, name
 	}
 	args := append(defaultChromeArgs, fmt.Sprintf("--app=%s", url))
-	args = append(args, fmt.Sprintf("--user-data-dir=%s", dir))
+	args = append(args, fmt.Sprintf("--user-data-dir=%s", userDataDir))
 	args = append(args, fmt.Sprintf("--window-size=%d,%d", width, height))
 	args = append(args, customArgs...)
 	args = append(args, "--remote-debugging-port=0")
