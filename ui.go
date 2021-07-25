@@ -18,12 +18,14 @@ type UI interface {
 	Eval(js string) Value
 	Done() <-chan struct{}
 	Close() error
+	Dir() string
 }
 
 type ui struct {
 	chrome *chrome
 	done   chan struct{}
 	tmpDir string
+	dir    string
 }
 
 var defaultChromeArgs = []string{
@@ -49,7 +51,7 @@ var defaultChromeArgs = []string{
 	"--no-first-run",
 	"--no-default-browser-check",
 	"--safebrowsing-disable-auto-update",
-	"--enable-automation",
+	"--disable-automation",
 	"--password-store=basic",
 	"--use-mock-keychain",
 }
@@ -89,6 +91,56 @@ func New(url, dir string, width, height int, customArgs ...string) (UI, error) {
 		close(done)
 	}()
 	return &ui{chrome: chrome, done: done, tmpDir: tmpDir}, nil
+}
+
+// NewWithPreCallback same as New but with callbacks
+// preCallback which runs before browser is launched
+func NewWithPreCallback(url, dir string, width, height int, preCallback func(UI), customArgs ...string) (UI, error) {
+	if url == "" {
+		url = "data:text/html,<html></html>"
+	}
+	tmpDir := ""
+	if dir == "" {
+		name, err := ioutil.TempDir("", "lorca")
+		if err != nil {
+			return nil, err
+		}
+		dir, tmpDir = name, name
+	}
+	args := append(defaultChromeArgs, fmt.Sprintf("--app=%s", url))
+	args = append(args, fmt.Sprintf("--user-data-dir=%s", dir))
+	args = append(args, fmt.Sprintf("--window-size=%d,%d", width, height))
+	args = append(args, customArgs...)
+	args = append(args, "--remote-debugging-port=0")
+
+	retUi := new(ui)
+	retUi.tmpDir = tmpDir
+	retUi.dir = dir
+
+	done := make(chan struct{})
+	retUi.done = done
+
+	preCallback(retUi)
+
+	chrome, err := newChromeWithArgs(ChromeExecutable(), args...)
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		chrome.cmd.Wait()
+		close(done)
+	}()
+	retUi.chrome = chrome
+
+	return retUi, nil
+}
+
+func (u *ui) Dir() string {
+	if u.tmpDir != "" {
+		return u.tmpDir
+	}
+	return u.dir
 }
 
 func (u *ui) Done() <-chan struct{} {

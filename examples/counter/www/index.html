@@ -1,28 +1,92 @@
 <!doctype html>
 <html>
 	<head>
-		<title>Counter</title>
+		<title>CounterApp</title>
 		<link rel="shortcut icon" href="favicon.png">
 		<style>
+		body{
+			background:#f1c40f;
+			height: 100vh;
+			padding: 0;
+			margin: 0;
+			font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+		}
 		* { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-		body { height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f1c40f; font-family: 'Helvetika Neue', Arial, sans-serif; font-size: 28px; }
+		main { height: calc(100vh - 30px); display: flex; align-items: center; justify-content: center; background-color: #f1c40f; font-family: 'Helvetika Neue', Arial, sans-serif; font-size: 28px; }
 		.counter-container { display: flex; flex-direction: column; align-items: center; }
-		.counter { text-transform: uppercase; color: #fff; font-weight: bold; font-size: 3rem; }
+		.counter { text-transform: uppercase; color: #000; font-weight: bold; font-size: 3rem; }
 		.btn-row { display: flex; align-items: center; margin: 1rem; }
-		.btn { cursor: pointer; min-width: 4em; padding: 1em; border-radius: 5px; text-align: center; margin: 0 1rem; box-shadow: 0 6px #8b5e00; color: white; background-color: #E4B702; position: relative; font-weight: bold; }
+		.btn { cursor: pointer; min-width: 4em; padding: 1em; border-radius: 5px; text-align: center; margin: 0 1rem; box-shadow: 0 6px #8b5e00; color: rgb(0, 0, 0); background-color: #E4B702; position: relative; font-weight: bold; }
 		.btn:hover { box-shadow: 0 4px #8b5e00; top: 2px; }
 		.btn:active{ box-shadow: 0 1px #8b5e00; top: 5px; }
 		</style>
+
+		<style>
+			#menu-bar {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				height: 30px;
+				background: #000000;
+				-webkit-app-region: drag;
+			}
+			#menu-bar > div {
+				height: 100%;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+			.menubar-btn {
+				-webkit-app-region: no-drag;
+			}
+			button {
+				height: 100%;
+				padding: 0 15px;
+				border: none;
+				background: transparent;
+				outline: none;
+			}
+			button:hover {
+				background: rgba(99, 94, 94, 0.384);
+			}
+			#close-btn:hover {
+				background: rgb(255, 0, 0);
+			}
+			button i {
+				color: rgb(255, 255, 255);
+			}
+			button svg path {
+				fill: rgb(255, 255, 255);
+			}
+			h5 { color:rgb(255, 255, 255); }
+		</style>
+		<!-- https://fontawesome.com/v5.15/how-to-use/on-the-web/setup/hosting-font-awesome-yourself -->
+		<script src="js/all.min.js" type="text/javascript"></script>
 	</head>
 	<body onload=start()>
-		<!-- UI layout -->
-		<div class="counter-container">
-			<div class="counter"></div>
-			<div class="btn-row">
-				<div class="btn btn-incr">+1</div>
-				<div class="btn btn-decr">-1</div>
+		<!-- Menu layout -->
+		<div id="menu-bar">
+			<div class="left" role="menu">
+				<button class="menubar-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+				<h5>CounterApp</h5>
+			</div>
+			<div class="right">
+				<button class="menubar-btn" onclick="WindowMinimize()" id="minimize-btn" title="Minimize"><i class="fas fa-window-minimize"></i></button>
+				<button class="menubar-btn" onclick="SetWindowToggleMax()" id="max-unmax-btn" title="Full Screen"><i class="fas fa-expand"></i></button>
+				<button class="menubar-btn" onclick="WindowClose()" id="close-btn" title="Close"><i class="fas fa-times"></i></button>
 			</div>
 		</div>
+
+		<!-- UI layout -->
+		<main>
+			<div class="counter-container">
+				<div class="counter"></div>
+				<div class="btn-row">
+					<div class="btn btn-incr">+1</div>
+					<div class="btn btn-decr">-1</div>
+				</div>
+			</div>
+		</main>
 
 		<!-- Connect UI actions to Go functions -->
 		<script>
@@ -46,6 +110,42 @@
 			});
 
 			render();
+		</script>
+
+		<script>
+			const maxUnmaxBtn = document.querySelector('#max-unmax-btn');
+			const mainContent = document.querySelector('main');
+			const menuBar = document.querySelector('#menu-bar');
+
+			const renderMenu = async () => {
+				var fs = await WindowIsFullscreen();
+				menuBar.style.display = fs ? 'flex' : 'none';
+				mainContent.style.height = !fs ? '100vh' : '';
+				maxUnmaxBtn.innerHTML = !fs ? `<i class="fas fa-expand"></i>` : `<i class="fas fa-compress"></i>`;
+				// maxUnmaxBtn.innerHTML = !fs ? `<i class="far fa-square"></i>` : `<i class="fas fa-window-restore"></i>`;
+				maxUnmaxBtn.setAttribute('title', !fs ? 'Full Screen' : 'Exit Full Screen');
+			};
+
+			window.addEventListener('resize', renderMenu);
+
+			var SetWindowToggleMax = async () => {
+				await WindowToggleFullscreen();
+				//await WindowToggleMax();
+				renderMenu();
+			}
+
+			window.addEventListener('focus', function() {
+				WindowFullscreen();
+				renderMenu();
+			});
+
+			renderMenu();
+
+			/*window.addEventListener('blur', function() {
+				WindowNormal();
+				console.log('not focused');
+			});*/
+
 		</script>
 	</body>
 </html>
