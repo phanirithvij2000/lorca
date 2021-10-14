@@ -41,11 +41,6 @@ func LocateChrome() string {
 			os.Getenv("LocalAppData") + "/Google/Chrome/Application/chrome.exe",
 			os.Getenv("ProgramFiles") + "/Google/Chrome/Application/chrome.exe",
 			os.Getenv("ProgramFiles(x86)") + "/Google/Chrome/Application/chrome.exe",
-			// Brave
-			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser/Application/brave.exe",
-			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Beta/Application/brave.exe",
-			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Dev/Application/brave.exe",
-			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Nightly/Application/brave.exe",
 			// Chrome Beta
 			os.Getenv("LocalAppData") + "/Google/Chrome Beta/Application/chrome.exe",
 			os.Getenv("ProgramFiles") + "/Google/Chrome Beta/Application/chrome.exe",
@@ -56,6 +51,11 @@ func LocateChrome() string {
 			os.Getenv("ProgramFiles(x86)") + "/Chromium/Application/chrome.exe",
 			// Microsoft Edge
 			os.Getenv("ProgramFiles(x86)") + "/Microsoft/Edge/Application/msedge.exe",
+			// Brave
+			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser/Application/brave.exe",
+			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Beta/Application/brave.exe",
+			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Dev/Application/brave.exe",
+			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Nightly/Application/brave.exe",
 		}
 	default:
 		paths = []string{

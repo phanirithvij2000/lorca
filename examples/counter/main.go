@@ -179,8 +179,8 @@ func main() {
 		userDataDir,
 		480, 320,
 		func(ui lorca.UI) {
-			removeCrashWarnings(userDataDir)
-			setBraveDefaultPrefs(ui.Dir())
+			// removeCrashWarnings(userDataDir)
+			// setBraveDefaultPrefs(ui.Dir())
 		},
 		args...,
 	)
@@ -188,7 +188,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer ui.Close()
+	defer func() {
+		log.Println("Defer kill")
+		// log.Println(ui.Close())
+	}()
 
 	// A simple way to know when UI is ready (uses body.onload event in JS)
 	ui.Bind("start", func() {
@@ -208,7 +211,7 @@ func main() {
 	ui.Bind("WindowClose", func() { ui.Close() })
 
 	// set to fullscreen by default
-	Fullscreen(ui)
+	// Fullscreen(ui)
 
 	// Create and bind Go object to the UI
 	c := &counter{}

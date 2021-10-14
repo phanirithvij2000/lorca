@@ -504,6 +504,7 @@ func (c *chrome) png(x, y, width, height int, bg uint32, scale float32) ([]byte,
 }
 
 func (c *chrome) kill() error {
+	c.send("Browser.close", h{})
 	if c.ws != nil {
 		if err := c.ws.Close(); err != nil {
 			return err
