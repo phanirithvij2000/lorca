@@ -51,6 +51,7 @@ func LocateChrome() string {
 			os.Getenv("ProgramFiles(x86)") + "/Chromium/Application/chrome.exe",
 			// Microsoft Edge
 			os.Getenv("ProgramFiles(x86)") + "/Microsoft/Edge/Application/msedge.exe",
+			os.Getenv("ProgramFiles") + "/Microsoft/Edge/Application/msedge.exe",
 			// Brave
 			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser/Application/brave.exe",
 			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Beta/Application/brave.exe",
