@@ -594,6 +594,7 @@ func (c *Chrome) PNG(x, y, width, height int, bg uint32, scale float32) ([]byte,
 
 // Kill kills the chrome process
 func (c *Chrome) Kill() error {
+	c.Send("Browser.close", h{})
 	if c.ws != nil {
 		if err := c.ws.Close(); err != nil {
 			return err
