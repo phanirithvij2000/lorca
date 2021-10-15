@@ -42,7 +42,7 @@ func main() {
 	if runtime.GOOS == "linux" {
 		args = append(args, "--class=Lorca")
 	}
-	ui, err := lorca.New("", "", 480, 320, args...)
+	ui, err := lorca.New(lorca.LocateChrome(), "", "", 480, 320, args...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func main() {
 	`)
 
 	// Wait until the interrupt signal arrives or browser window is closed
-	sigc := make(chan os.Signal)
+	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt)
 	select {
 	case <-sigc:
