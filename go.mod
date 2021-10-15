@@ -1,3 +1,5 @@
 module github.com/kjk/lorca
 
-require golang.org/x/net v0.0.0-20181102091132-c10e9556a7bc
+go 1.16
+
+require golang.org/x/net v0.0.0-20200222125558-5a598a2470a0

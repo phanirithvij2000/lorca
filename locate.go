@@ -10,6 +10,14 @@ import (
 // LocateChrome returns a path to the Chrome binary, or an empty string if
 // Chrome installation is not found.
 func LocateChrome() string {
+
+	// If env variable "LORCACHROME" specified and it exists
+	if path, ok := os.LookupEnv("LORCACHROME"); ok {
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+
 	var paths []string
 	switch runtime.GOOS {
 	case "darwin":
@@ -17,6 +25,7 @@ func LocateChrome() string {
 			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 			"/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
 			"/Applications/Chromium.app/Contents/MacOS/Chromium",
+			"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
 			"/usr/bin/google-chrome-stable",
 			"/usr/bin/google-chrome",
 			"/usr/bin/chromium",
@@ -24,11 +33,14 @@ func LocateChrome() string {
 		}
 	case "windows":
 		paths = []string{
-			// TODO: should use os.Getenv("SystemDrive") (is C: on my system) instead of C: and env "ProgramFiles" and "ProgramFiles(x86)"
-			"C:/Users/" + os.Getenv("USERNAME") + "/AppData/Local/Google/Chrome/Application/chrome.exe",
-			"C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
-			"C:/Program Files/Google/Chrome/Application/chrome.exe",
-			"C:/Users/" + os.Getenv("USERNAME") + "/AppData/Local/Chromium/Application/chrome.exe",
+			os.Getenv("LocalAppData") + "/Google/Chrome/Application/chrome.exe",
+			os.Getenv("ProgramFiles") + "/Google/Chrome/Application/chrome.exe",
+			os.Getenv("ProgramFiles(x86)") + "/Google/Chrome/Application/chrome.exe",
+			os.Getenv("LocalAppData") + "/Chromium/Application/chrome.exe",
+			os.Getenv("ProgramFiles") + "/Chromium/Application/chrome.exe",
+			os.Getenv("ProgramFiles(x86)") + "/Chromium/Application/chrome.exe",
+			os.Getenv("ProgramFiles(x86)") + "/Microsoft/Edge/Application/msedge.exe",
+			os.Getenv("ProgramFiles") + "/Microsoft/Edge/Application/msedge.exe",
 		}
 	default:
 		paths = []string{
@@ -36,6 +48,7 @@ func LocateChrome() string {
 			"/usr/bin/google-chrome",
 			"/usr/bin/chromium",
 			"/usr/bin/chromium-browser",
+			"/snap/bin/chromium",
 		}
 	}
 

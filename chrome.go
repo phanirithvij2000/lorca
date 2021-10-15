@@ -415,8 +415,8 @@ type NavigationHistoryEntry struct {
 
 // NavigationHistory represents browser navigation history
 type NavigationHistory struct {
-	CurrentIndex int `json:"currentIndex"`
-	Entries []*NavigationHistoryEntry `json:"entries"`
+	CurrentIndex int                       `json:"currentIndex"`
+	Entries      []*NavigationHistoryEntry `json:"entries"`
 }
 
 // GetNavigationHistory returns browser navigation history
@@ -461,8 +461,18 @@ func (c *Chrome) Forward() error {
 // Bind creates a browser-side binding with name to a function
 func (c *Chrome) Bind(name string, f bindingFunc) error {
 	c.Lock()
+	// check if binding already exists
+	_, exists := c.bindings[name]
+
 	c.bindings[name] = f
 	c.Unlock()
+
+	if exists {
+		// Just replace callback and return, as the binding was already added to js
+		// and adding it again would break it.
+		return nil
+	}
+
 	if _, err := c.Send("Runtime.addBinding", h{"name": name}); err != nil {
 		return err
 	}

@@ -1,5 +1,9 @@
 # Lorca
 
+[![Build Status](https://img.shields.io/github/workflow/status/zserge/lorca/CI%20Pipeline)](https://github.com/zserge/lorca)
+[![GoDoc](https://godoc.org/github.com/zserge/lorca?status.svg)](https://godoc.org/github.com/zserge/lorca)
+[![Go Report Card](https://goreportcard.com/badge/github.com/zserge/lorca)](https://goreportcard.com/report/github.com/zserge/lorca)
+
 <div>
 <img align="left" src="https://raw.githubusercontent.com/kjk/lorca/master/lorca.png" alt="Lorca" width="128px" height="128px" />
 <br/>
@@ -23,7 +27,6 @@
 - Call arbitrary JavaScript code from Go
 - Asynchronous flow between UI and main app in both languages (async/await and Goroutines)
 - Supports loading web UI from the local web server or via data URL
-- Supports embedding all assets into a single binary
 - Supports testing your app with the UI in the headless mode
 - Supports multiple app windows
 - Supports packaging and branding (e.g. custom app icons). Packaging for all
@@ -59,10 +62,19 @@ fmt.Println(m)
 <-ui.Done()
 ```
 
-Also, see [examples](examples) for more details about binding functions, embedding
-assets and packaging binaries.
-
 <p align="center"><img src="examples/counter/counter.gif" /></p>
+
+Also, see [examples](examples) for more details about binding functions and packaging binaries.
+
+## Hello World
+
+Here are the steps to run the hello world example.
+
+```
+cd examples/counter
+go get
+go run ./
+```
 
 ## How it works
 
