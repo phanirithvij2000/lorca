@@ -33,12 +33,24 @@ func LocateChrome() string {
 		}
 	case "windows":
 		paths = []string{
+			// Chrome
 			os.Getenv("LocalAppData") + "/Google/Chrome/Application/chrome.exe",
 			os.Getenv("ProgramFiles") + "/Google/Chrome/Application/chrome.exe",
 			os.Getenv("ProgramFiles(x86)") + "/Google/Chrome/Application/chrome.exe",
+			// Brave
+			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser/Application/brave.exe",
+			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Beta/Application/brave.exe",
+			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Dev/Application/brave.exe",
+			os.Getenv("ProgramFiles(x86)") + "/BraveSoftware/Brave-Browser-Nightly/Application/brave.exe",
+			// Chrome Beta
+			os.Getenv("LocalAppData") + "/Google/Chrome Beta/Application/chrome.exe",
+			os.Getenv("ProgramFiles") + "/Google/Chrome Beta/Application/chrome.exe",
+			os.Getenv("ProgramFiles(x86)") + "/Google/Chrome Beta/Application/chrome.exe",
+			// Chromium
 			os.Getenv("LocalAppData") + "/Chromium/Application/chrome.exe",
 			os.Getenv("ProgramFiles") + "/Chromium/Application/chrome.exe",
 			os.Getenv("ProgramFiles(x86)") + "/Chromium/Application/chrome.exe",
+			// Microsoft Edge
 			os.Getenv("ProgramFiles(x86)") + "/Microsoft/Edge/Application/msedge.exe",
 			os.Getenv("ProgramFiles") + "/Microsoft/Edge/Application/msedge.exe",
 		}
