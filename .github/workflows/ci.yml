@@ -7,26 +7,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     continue-on-error: false
     steps:
       - uses: actions/checkout@v2
-      - name: Install Chrome
-        if: ${{matrix.os == 'ubuntu-latest'}}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -yqq google-chrome-stable
-      - name: Install Chrome
-        if: ${{matrix.os == 'windows-latest'}}
-        run: |
-          Set-ExecutionPolicy RemoteSigned -scope CurrentUser
-          iwr -useb get.scoop.sh | iex
-          scoop bucket add extras
-          scoop install googlechrome
+      - uses: browser-actions/setup-chrome@latest
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.17'
+          go-version: "1.17"
       - name: Run tests
         run: go test -timeout 30s -v -race ./...
       - name: Build examples
