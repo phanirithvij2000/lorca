@@ -70,6 +70,7 @@ func NewChromeWithArgs(chromeBinary string, args ...string) (*Chrome, error) {
 	re := regexp.MustCompile(`^DevTools listening on (ws://.*?)\r?\n$`)
 	m, err := readUntilMatch(pipe, re)
 	if err != nil {
+		log.Println(err)
 		c.Kill()
 		return nil, err
 	}

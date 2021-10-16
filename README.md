@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/zserge/lorca)](https://goreportcard.com/report/github.com/zserge/lorca)
 
 <div>
-<img align="left" src="https://raw.githubusercontent.com/kjk/lorca/master/lorca.png" alt="Lorca" width="128px" height="128px" />
+<img align="left" src="https://raw.githubusercontent.com/phanirithvij2000/lorca/master/lorca.png" alt="Lorca" width="128px" height="128px" />
 <br/>
 <p>
 	A small library to build modern HTML5 desktop apps in Go. It uses Chrome

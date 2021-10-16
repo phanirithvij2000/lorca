@@ -3,19 +3,32 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    continue-on-error: false
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Install Chrome
+        if: ${{matrix.os == 'ubuntu-latest'}}
         run: |
           sudo apt-get update
           sudo apt-get install -yqq google-chrome-stable
+      - name: Install Chrome
+        if: ${{matrix.os == 'windows-latest'}}
+        run: |
+          Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+          iwr -useb get.scoop.sh | iex
+          scoop bucket add extras
+          scoop install googlechrome
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.16'
+          go-version: '1.17'
       - name: Run tests
-        run: go test -v -race ./...
+        run: go test -timeout 30s -v -race ./...
       - name: Build examples
         env:
           CGO_ENABLED: 0

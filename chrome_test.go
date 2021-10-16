@@ -3,6 +3,7 @@ package lorca
 import (
 	"encoding/json"
 	"errors"
+	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -11,10 +12,20 @@ import (
 
 // TODO: made headless controllable via env "NO_HEADLESS"
 
+var args = []string{"--remote-debugging-port=0", "--headless"}
+
+func init() {
+	tmpdir, _ := os.MkdirTemp("", "profile")
+	// FIXED: on windows it hangs in --headless mode
+	// chrome.exe --enable-logging=stderr --headless gave the warning
+	// [1016/185032.379:WARNING:headless_browser_main_parts.cc(106)] Cannot create Pref Service with no user data dir
+	// SO --user-data-dir is required for tests to run on Windows in headless mode
+	// The bug was we were using /tmp previously
+	// which doesn't exist on windows
+	args = append(args, "--user-data-dir="+tmpdir)
+}
+
 func TestChromeEval(t *testing.T) {
-	// TODO: on windows it hangs in --headless mode
-	//args := ["--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"]
-	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0", "--headless"}
 	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)
@@ -49,9 +60,6 @@ func TestChromeEval(t *testing.T) {
 }
 
 func TestChromeLoad(t *testing.T) {
-	// TODO: on windows it hangs in --headless mode
-	//args := []string{"--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"}
-	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0"}
 	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)
@@ -78,9 +86,6 @@ func TestChromeLoad(t *testing.T) {
 }
 
 func TestChromeBind(t *testing.T) {
-	// TODO: on windows it hangs in --headless mode
-	//args := []string{"--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"}
-	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0"}
 	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)
@@ -118,9 +123,6 @@ func TestChromeBind(t *testing.T) {
 }
 
 func TestChromeAsync(t *testing.T) {
-	// TODO: on windows it hangs in --headless mode
-	//args := []string{"--user-data-dir=/tmp", "--headless", "--remote-debugging-port=0"}
-	args := []string{"--user-data-dir=/tmp", "--remote-debugging-port=0"}
 	c, err := NewChromeWithArgs(LocateChrome(), args...)
 	if err != nil {
 		t.Fatal(err)

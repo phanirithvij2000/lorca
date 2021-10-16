@@ -33,6 +33,13 @@ func LocateChrome() string {
 		}
 	case "windows":
 		paths = []string{
+			// Scoop versions
+			os.Getenv("UserProfile") + "/scoop/apps/googlechrome/current/chrome.exe",
+			os.Getenv("UserProfile") + "/scoop/apps/googlechrome-beta/current/chrome.exe",
+			os.Getenv("UserProfile") + "/scoop/apps/googlechrome-dev/current/chrome.exe",
+			os.Getenv("UserProfile") + "/scoop/apps/googlechrome-canary/current/chrome.exe",
+			os.Getenv("UserProfile") + "/scoop/apps/chromium/current/chrome.exe",
+			os.Getenv("UserProfile") + "/scoop/apps/brave/current/brave.exe",
 			// Chrome
 			os.Getenv("LocalAppData") + "/Google/Chrome/Application/chrome.exe",
 			os.Getenv("ProgramFiles") + "/Google/Chrome/Application/chrome.exe",

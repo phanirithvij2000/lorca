@@ -16,7 +16,7 @@ import (
 	"sync"
 
 	"github.com/bitly/go-simplejson"
-	"github.com/kjk/lorca"
+	"github.com/phanirithvij2000/lorca"
 )
 
 //go:embed www
@@ -92,6 +92,7 @@ func Normal(ui lorca.UI) {
 	ui.SetBounds(lorca.Bounds{WindowState: lorca.WindowStateNormal})
 }
 
+// TODO when switched back to screen restore fullscreen if this is true
 var fullScreenMinimized = false
 
 func Minimize(ui lorca.UI) {
@@ -150,7 +151,7 @@ func main() {
 
 	args := []string{
 		"--disable-infobars",
-		// "--kiosk",
+		"--kiosk",
 		"--disable-session-crashed-bubble",
 		"--disable-experimental-fullscreen-exit-ui",
 	}
@@ -174,16 +175,17 @@ func main() {
 
 	log.Println("Listening on", fmt.Sprintf("http://%s", ln.Addr()))
 
-	ui, err := lorca.NewWithPreCallback(
+	xui, err := lorca.NewWithPreCallback(
 		fmt.Sprintf("http://%s/www", ln.Addr()),
 		userDataDir,
 		480, 320,
-		func(ui lorca.UI) {
+		func(ui lorca.UIInt) {
 			// removeCrashWarnings(userDataDir)
 			// setBraveDefaultPrefs(ui.Dir())
 		},
 		args...,
 	)
+	ui := *xui.(*lorca.UI)
 
 	if err != nil {
 		log.Fatal(err)
@@ -195,7 +197,7 @@ func main() {
 
 	// A simple way to know when UI is ready (uses body.onload event in JS)
 	ui.Bind("start", func() {
-		log.Println("UI is ready")
+		// log.Println("UI is ready")
 	})
 
 	ui.Bind("WindowFullscreen", func() { Fullscreen(ui) })
